@@ -1,60 +1,51 @@
 #include <Wire.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
 
-const int MPU = 0x68;
-
-// Raw sensor values
-int16_t AcX, AcY, AcZ;
-int16_t GyX, GyY, GyZ;
-int16_t Temp;
+Adafruit_MPU6050 mpu;
 
 void setup() {
   Serial.begin(115200);
 
-  Wire.begin(21, 22);  // SDA, SCL for ESP32
+  Wire.begin(21, 22);   // SDA, SCL
 
-  // Wake up MPU6050
-  Wire.beginTransmission(MPU);
-  Wire.write(0x6B);
-  Wire.write(0);
-  Wire.endTransmission(true);
+  if (!mpu.begin()) {
+    Serial.println("MPU6050 not found!");
+    while (1) {
+      delay(10);
+    }
+  }
 
-  Serial.println("MPU6050 Initialized");
+  Serial.println("MPU6050 Connected!");
+
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+
+  delay(100);
 }
 
 void loop() {
+  sensors_event_t a, g, temp;
 
-  Wire.beginTransmission(MPU);
-  Wire.write(0x3B);  // Starting register
-  Wire.endTransmission(false);
+  mpu.getEvent(&a, &g, &temp);
 
-  Wire.requestFrom(MPU, 14, true);
+  Serial.print("Acc X: ");
+  Serial.print(a.acceleration.x);
+  Serial.print("  Y: ");
+  Serial.print(a.acceleration.y);
+  Serial.print("  Z: ");
+  Serial.print(a.acceleration.z);
 
-  AcX = Wire.read() << 8 | Wire.read();
-  AcY = Wire.read() << 8 | Wire.read();
-  AcZ = Wire.read() << 8 | Wire.read();
+  Serial.print("  Gyro X: ");
+  Serial.print(g.gyro.x);
+  Serial.print("  Y: ");
+  Serial.print(g.gyro.y);
+  Serial.print("  Z: ");
+  Serial.print(g.gyro.z);
 
-  Temp = Wire.read() << 8 | Wire.read();
-
-  GyX = Wire.read() << 8 | Wire.read();
-  GyY = Wire.read() << 8 | Wire.read();
-  GyZ = Wire.read() << 8 | Wire.read();
-
-  Serial.print("AccX: ");
-  Serial.print(AcX);
-  Serial.print("  AccY: ");
-  Serial.print(AcY);
-  Serial.print("  AccZ: ");
-  Serial.print(AcZ);
-
-  Serial.print(" | GyX: ");
-  Serial.print(GyX);
-  Serial.print("  GyY: ");
-  Serial.print(GyY);
-  Serial.print("  GyZ: ");
-  Serial.print(GyZ);
-
-  Serial.print(" | Temp: ");
-  Serial.println((Temp / 340.0) + 36.53);
+  Serial.print("  Temp: ");
+  Serial.println(temp.temperature);
 
   delay(100);
 }
