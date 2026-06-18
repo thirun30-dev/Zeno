@@ -1,4 +1,4 @@
-# Zeno – Self-Balancing Robot 🤖
+# Zeno – Self-Balancing Robot 
 
 Zeno is a two-wheeled self-balancing robot designed to maintain stability using real-time sensor feedback and closed-loop PID control. Built around the Arduino Nano platform, Zeno continuously monitors its orientation using an MPU6050 Inertial Measurement Unit (IMU) and dynamically adjusts motor speed to remain balanced.
 
